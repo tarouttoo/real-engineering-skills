@@ -71,8 +71,10 @@ jobs:
         run: |
           BRANCH="agent/issue-${ISSUE_NUMBER}"
           TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq .title)
-          if gh pr view "$BRANCH" --json url >/dev/null 2>&1; then
-            echo "PR for $BRANCH already exists, skipping"
+          # Only skip when an OPEN PR exists — gh pr view also matches closed PRs.
+          OPEN_PRS=$(gh pr list --head "$BRANCH" --state open --json number --jq length)
+          if [ "$OPEN_PRS" != "0" ]; then
+            echo "Open PR for $BRANCH already exists, skipping"
             exit 0
           fi
           # Agent drafts the body (pr skill) into .sandcastle/pr-body.md;
