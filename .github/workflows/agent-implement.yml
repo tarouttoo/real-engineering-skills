@@ -77,15 +77,27 @@ jobs:
             echo "Open PR for $BRANCH already exists, skipping"
             exit 0
           fi
-          # Agent drafts the body (pr skill) into .sandcastle/pr-body.md;
-          # fall back to a minimal canned body if it didn't.
-          if [ -f .sandcastle/pr-body.md ]; then
-            BODY_FILE=$(mktemp)
-            { cat .sandcastle/pr-body.md; printf '\n---\n\nCloses #%s\n' "$ISSUE_NUMBER"; } > "$BODY_FILE"
+          # Agent drafts the body (pr skill) into .sandcastle/pr-body.md — but it
+          # works in a sandcastle worktree (.sandcastle/worktrees/<slug>/), so the
+          # file lands there, not in this checkout. Check both; canned fallback last.
+          BODY_FILE=$(mktemp)
+          BODY_SRC=""
+          for f in .sandcastle/pr-body.md .sandcastle/worktrees/*/.sandcastle/pr-body.md; do
+            if [ -f "$f" ]; then BODY_SRC="$f"; break; fi
+          done
+          if [ -n "$BODY_SRC" ]; then
+            echo "Using agent-drafted body from $BODY_SRC"
+            { cat "$BODY_SRC"; printf '\n---\n\nCloses #%s\n' "$ISSUE_NUMBER"; } > "$BODY_FILE"
           else
-            BODY_FILE=$(mktemp)
+            echo "No agent PR body found; using canned fallback"
             printf 'Implements #%s.\n\nCloses #%s\n\n(Agent did not write a PR body — see the report comment on the issue.)\n' "$ISSUE_NUMBER" "$ISSUE_NUMBER" > "$BODY_FILE"
           fi
+          # Debuggability: show what the agent left uncommitted in its worktree.
+          for d in .sandcastle/worktrees/*/; do
+            [ -d "$d" ] || continue
+            echo "Leftover in worktree $d:"
+            git -C "$d" status --porcelain || true
+          done
           gh pr create \
             --base main \
             --head "$BRANCH" \
