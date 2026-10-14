@@ -56,6 +56,20 @@ _Used in_: [docs/agents/triage-labels.md](docs/agents/triage-labels.md)
 GitHub's native parent–child link between two issues; a child ticket is attached to its map this way.
 _Used in_: [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)
 
+### Agent pipeline
+
+**Sandcastle**:
+The agent pipeline harness (mattpocock/sandcastle) that turns one issue into one pull request.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
+**AFK run**:
+One unattended execution of Sandcastle: it implements a single issue on its own branch and reports back on the issue.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
+**Sandbox**:
+The isolation an AFK run executes with — host or container; the choice for the current phase is recorded in ADR 0001.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
 ### Domain docs
 
 **Domain docs**:
