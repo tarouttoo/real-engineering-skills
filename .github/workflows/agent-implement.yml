@@ -38,6 +38,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Podman (sandbox engine)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+          # Rootless podman needs subordinate uid/gid ranges for the runner user.
+          U=$(id -un)
+          grep -q "^${U}:" /etc/subuid || echo "${U}:100000:65536" | sudo tee -a /etc/subuid
+          grep -q "^${U}:" /etc/subgid || echo "${U}:100000:65536" | sudo tee -a /etc/subgid
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -60,6 +69,11 @@ jobs:
         run: |
           git config user.name "sandcastle-agent"
           git config user.email "sandcastle-agent@users.noreply.github.com"
+
+      - name: Build sandbox image
+        # Image name must match sandcastle's defaultImageName: sandcastle:<checkout
+        # dirname>. A missing image makes main.ts fail the run — no unsandboxed fallback.
+        run: podman build -t "sandcastle:$(basename "$GITHUB_WORKSPACE")" -f .sandcastle/Containerfile .sandcastle
 
       - name: Implement issue
         run: npx tsx .sandcastle/main.ts "$ISSUE_NUMBER"

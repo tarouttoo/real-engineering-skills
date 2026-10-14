@@ -8,7 +8,13 @@ Issues labelled `ready-for-agent` are implemented unattended, not by a human. We
 
 ## Sandbox
 
-Phase 1 runs with `noSandbox()`: the agent executes directly on the host, because Docker is unavailable in the maintainer's WSL. The phase-2 plan is rootless Podman; the swap is one line in `.sandcastle/main.ts` (`noSandbox()` → `podman()`). `.sandcastle/Dockerfile` is kept for that containerized phase and is unused today.
+AFK runs execute the agent inside a rootless Podman container — the agent never runs on the invoking host, locally or in CI. Podman was chosen over repairing WSL Docker because the maintainer's WSL has no systemd (Docker's daemon cannot run there reliably), while rootless Podman needs neither a daemon nor systemd, and `--userns=keep-id` maps container file ownership to the host user.
+
+- **Image**: built per host from `.sandcastle/Containerfile`; sandcastle names it after the checkout directory, so local and CI share `sandcastle:real-engineering-skills`. The hosted workflow installs Podman and builds the image before each run; locals build once. A missing image or missing `podman` binary fails the run — there is no unsandboxed fallback, by design.
+- **Secrets**: only `GH_TOKEN`, `GH_REPO`, and `ZAI_API_KEY` enter the container, via an explicit allowlist in `.sandcastle/main.ts`; pi's auth lives in `~/.pi/agent`, bind-mounted into the container home.
+- **Not a security boundary**: the allowlisted credentials can still be exfiltrated by a misbehaving agent, and `GH_TOKEN`'s `contents: write` could push to `main`. The sandbox guards against accident and drift, not malice; token scoping and egress rules would be a separate decision.
+
+Phase 1 ran with `noSandbox()` because Docker was unavailable in the maintainer's WSL. The planned "one-line swap" understated the migration: the `Dockerfile` became a `Containerfile` (the name the Podman provider expects), and the image's pi package (`@earendil-works/pi-coding-agent`) and Node version (24) had to be brought in line with the hosted workflow before the sandboxed agent matched the validated one.
 
 ## Workflow rules
 
@@ -18,4 +24,4 @@ Phase 1 runs with `noSandbox()`: the agent executes directly on the host, becaus
 
 ## Config and secrets
 
-Pipeline config is committed in-repo: `.sandcastle/` (prompt, pi settings, `main.ts`) and `.github/workflows/agent-implement.yml`. The only stored credential is the `ZAI_API_KEY` GitHub Actions secret; `.sandcastle/.env` is gitignored for local overrides.
+Pipeline config is committed in-repo: `.sandcastle/` (prompt, pi settings, `main.ts`, `Containerfile`) and `.github/workflows/agent-implement.yml`. The only stored credential is the `ZAI_API_KEY` GitHub Actions secret; `.sandcastle/.env` is gitignored for local overrides.

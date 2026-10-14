@@ -1,4 +1,4 @@
-FROM node:22-bookworm
+FROM node:24-bookworm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,17 +15,20 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
   && apt-get update && apt-get install -y gh \
   && rm -rf /var/lib/apt/lists/*
 
-# Build-args for UID/GID alignment: sandcastle docker build-image
-# defaults these to the host user's UID/GID so image-built files
-# and bind-mounted files share an owner without runtime chown.
+# Build-args for UID/GID alignment: they must match podman()'s containerUid/
+# containerGid (default 1000, which is also the maintainer's host uid) so
+# image-built files and keep-id-mapped bind-mounted files share one owner.
 ARG AGENT_UID=1000
 ARG AGENT_GID=1000
 
 # Rename the base image's "node" user to "agent" and align UID/GID.
 RUN groupmod -o -g $AGENT_GID node && usermod -o -u $AGENT_UID -g $AGENT_GID -d /home/agent -m -l agent node
 
-# Install pi coding agent (run as root before USER agent)
-RUN npm install -g @mariozechner/pi-coding-agent
+# Install pi coding agent (run as root before USER agent) — the same package
+# the hosted workflow installs on the runner, so sandboxed and host runs use
+# one pi. Install the image with:
+#   podman build -t sandcastle:real-engineering-skills -f .sandcastle/Containerfile .sandcastle
+RUN npm install -g @earendil-works/pi-coding-agent
 
 USER ${AGENT_UID}:${AGENT_GID}
 
@@ -33,5 +36,5 @@ WORKDIR /home/agent
 
 # In worktree sandbox mode, Sandcastle bind-mounts the git worktree at /home/agent/workspace
 # and overrides the working directory to /home/agent/workspace at container start.
-# Structure your Dockerfile so that /home/agent/workspace can serve as the project root.
+# Structure your Containerfile so that /home/agent/workspace can serve as the project root.
 ENTRYPOINT ["sleep", "infinity"]
