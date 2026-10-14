@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install -g @mariozechner/pi-coding-agent
+          npm install -g @earendil-works/pi-coding-agent
 
       - name: Configure pi (zai auth + models)
         run: |
