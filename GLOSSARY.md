@@ -56,6 +56,20 @@ _Used in_: [docs/agents/triage-labels.md](docs/agents/triage-labels.md)
 GitHub's native parent–child link between two issues; a child ticket is attached to its map this way.
 _Used in_: [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)
 
+### Agent pipeline
+
+**Sandcastle**:
+The issue-driven AFK pipeline this repo runs: one agent implements one `ready-for-agent` issue on its own branch, and a GitHub Actions workflow opens its pull request.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
+**AFK run**:
+A single unattended agent pass over one issue, triggered by the `ready-for-agent` label or a manual dispatch.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
+**Sandbox**:
+The container isolation an agent runs inside during an AFK run; run without one today, with rootless Podman planned.
+_Used in_: [docs/adr/0001-sandcastle-afk-pipeline.md](docs/adr/0001-sandcastle-afk-pipeline.md)
+
 ### Domain docs
 
 **Domain docs**:
