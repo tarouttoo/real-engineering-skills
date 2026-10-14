@@ -62,6 +62,15 @@ Leave a comment on issue #{{ISSUE_NUMBER}} with:
 - key decisions made
 - anything the reviewer should look at closely
 
+Write the pull request description to `.sandcastle/pr-body.md`. Load the `pr` skill
+before writing it — follow its guidance on structure and content. The body must cover:
+- what changed and why
+- key decisions made (and alternatives rejected, if meaningful)
+- what the reviewer should look at closely
+
+Do NOT include `Closes #N` in the file — the workflow appends it automatically.
+The file must exist when you finish, even if minimal.
+
 Do NOT close the issue — the pull request will close it.
 Do NOT push, merge, or touch any branch other than `{{BRANCH}}`.
 

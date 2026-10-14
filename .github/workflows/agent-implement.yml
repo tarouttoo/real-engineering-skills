@@ -73,14 +73,19 @@ jobs:
           TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq .title)
           if gh pr view "$BRANCH" --json url >/dev/null 2>&1; then
             echo "PR for $BRANCH already exists, skipping"
-          else
-            gh pr create \
-              --base main \
-              --head "$BRANCH" \
-              --title "agent: ${TITLE} (#${ISSUE_NUMBER})" \
-              --body "Implements #${ISSUE_NUMBER}.
-
-          Closes #${ISSUE_NUMBER}
-
-          Ran via sandcastle (pi / glm-5.3-flash). Review the diff and the report comment on the issue."
+            exit 0
           fi
+          # Agent drafts the body (pr skill) into .sandcastle/pr-body.md;
+          # fall back to a minimal canned body if it didn't.
+          if [ -f .sandcastle/pr-body.md ]; then
+            BODY_FILE=$(mktemp)
+            { cat .sandcastle/pr-body.md; printf '\n---\n\nCloses #%s\n' "$ISSUE_NUMBER"; } > "$BODY_FILE"
+          else
+            BODY_FILE=$(mktemp)
+            printf 'Implements #%s.\n\nCloses #%s\n\n(Agent did not write a PR body — see the report comment on the issue.)\n' "$ISSUE_NUMBER" "$ISSUE_NUMBER" > "$BODY_FILE"
+          fi
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "agent: ${TITLE} (#${ISSUE_NUMBER})" \
+            --body-file "$BODY_FILE"
