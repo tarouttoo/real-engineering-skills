@@ -55,12 +55,7 @@ Make a git commit on `{{BRANCH}}`. The commit message must:
 3. State key decisions made
 4. Be concise
 
-# REPORT
-
-Leave a comment on issue #{{ISSUE_NUMBER}} with:
-- what was done
-- key decisions made
-- anything the reviewer should look at closely
+# PR BODY
 
 Write the pull request description to `.sandcastle/pr-body.md`. Load the `pr` skill
 before writing it — follow its guidance on structure and content. The body must cover:
@@ -68,13 +63,24 @@ before writing it — follow its guidance on structure and content. The body mus
 - key decisions made (and alternatives rejected, if meaningful)
 - what the reviewer should look at closely
 
-Do NOT include `Closes #N` in the file — the workflow appends it automatically.
-The file must exist when you finish, even if minimal.
+The workflow appends `Closes #{{ISSUE_NUMBER}}` to the file's contents itself, so leave
+it out. Completion criterion: `test -f .sandcastle/pr-body.md` exits 0. Run that check
+before moving on; if it fails, write the file, then re-run it.
 
-Do NOT close the issue — the pull request will close it.
-Do NOT push, merge, or touch any branch other than `{{BRANCH}}`.
+# REPORT
 
-Once complete, output <promise>COMPLETE</promise>.
+Leave a comment on issue #{{ISSUE_NUMBER}} with:
+- what was done
+- key decisions made
+- anything the reviewer should look at closely
+
+# DONE
+
+Both steps above must be complete — including a passing `test -f
+.sandcastle/pr-body.md` — before you output <promise>COMPLETE</promise>.
+
+The pull request closes the issue, so leave the issue open.
+Stay on `{{BRANCH}}`; push nothing, merge nothing, touch no other branch.
 
 # FINAL RULES
 
