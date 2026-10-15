@@ -21,6 +21,7 @@ Phase 1 ran with `noSandbox()` because Docker was unavailable in the maintainer'
 - Applying `ready-for-agent` to an issue (or a manual `workflow_dispatch`) starts the GitHub Actions run.
 - The agent works on `agent/issue-<N>`, leaves a report comment on the issue, and never pushes `main` or closes the issue.
 - The workflow opens the pull request titled `agent: <issue title> (#<N>)`. Its body is agent-drafted into `.sandcastle/pr-body.md` via the `pr` skill, with `Closes #<N>` appended by the workflow; a canned fallback body is used when the file is missing.
+- Opening that pull request works only while the repo setting **"Allow GitHub Actions to create and approve pull requests"** is enabled (Settings → Actions → General → Workflow permissions); without it the PR step fails with "GitHub Actions is not permitted". The REST API equivalent (`PATCH` with `allow_actions_to_create_and_approve_pull_requests=true`) silently fails to persist — only the UI checkbox reliably enables the setting, so the remedy for that failure is re-checking the checkbox in the UI, not re-running the API PATCH.
 
 ## Config and secrets
 
